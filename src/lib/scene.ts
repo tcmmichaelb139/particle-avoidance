@@ -83,7 +83,7 @@ export function init() {
 	scene.background = new THREE.Color(0x1a1b26);
 
 	camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
-	camera.position.set(0, 0, 75);
+	camera.position.set(0, 0, 60);
 
 	const renderer = new THREE.WebGLRenderer();
 	renderer.setSize(window.innerWidth, window.innerHeight);
@@ -98,7 +98,7 @@ export function init() {
 	const bloomPass = new UnrealBloomPass(
 		new THREE.Vector2(window.innerWidth, window.innerHeight),
 		2.5,
-		2.5,
+		0.4,
 		0.01
 	);
 	composer.addPass(bloomPass);
@@ -125,11 +125,11 @@ export function createScene(geo: string, settings: Settings): void {
 	type Geometry = { [key: string]: THREE.BufferGeometry };
 
 	const geometry: Geometry = {
-		plane: new THREE.PlaneGeometry(16, 16, 32, 32),
-		sphere: new THREE.SphereGeometry(12, 64, 64),
+		plane: new THREE.PlaneGeometry(20, 20, 40, 40),
+		sphere: new THREE.SphereGeometry(12, 40, 40),
 		box: new THREE.BoxGeometry(16, 16, 16, 16, 16, 16),
-		torus: new THREE.TorusGeometry(12, 3, 32, 128),
-		'torus knot': new THREE.TorusKnotGeometry(12, 3, 128, 32)
+		torus: new THREE.TorusGeometry(12, 3, 16, 96),
+		'torus knot': new THREE.TorusKnotGeometry(12, 3, 96, 16)
 	};
 	const geometryMesh = new THREE.Mesh(geometry[geo], new THREE.MeshBasicMaterial());
 	const verticePosition = geometryMesh.geometry.attributes.position;

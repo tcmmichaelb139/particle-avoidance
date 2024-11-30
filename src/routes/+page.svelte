@@ -47,6 +47,7 @@
 		} else if (browser && geometry === '' && needDestroy) {
 			destroyScene();
 			numClicks++;
+			needDestroy = false;
 		}
 	});
 </script>
