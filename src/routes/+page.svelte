@@ -106,7 +106,10 @@
 
 {#if numClicks >= 3 && geometry === ''}
 	<footer class="footer-notes">
-		<p><b>Note:</b> Clicking back multiple times without reloading may slow down the program.</p>
+		<p>
+			<b>Note:</b> Clicking back multiple times without reloading may slow down the program. Consider
+			reloading.
+		</p>
 	</footer>
 {/if}
 

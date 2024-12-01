@@ -21,9 +21,11 @@ class Particle {
 	settings: Settings;
 
 	constructor(radius: number, original: THREE.Group, settings: Settings) {
+		const colors = [0x7aa2f7, 0x7dcfff, 0xbb9af7, 0x9ece6a, 0xff9e64, 0x73daca];
+
 		this.mesh = new THREE.Mesh(
 			new THREE.OctahedronGeometry(0.2, 0),
-			new THREE.MeshStandardMaterial({ color: 0x9ece6a })
+			new THREE.MeshStandardMaterial({ color: colors[Math.floor(Math.random() * colors.length)] })
 		);
 		this.radius = radius;
 		this.original = original;
@@ -35,18 +37,25 @@ class Particle {
 	}
 
 	avoidMouse(mouse: THREE.Vector2): void {
+		const originalPosition = new THREE.Vector3();
+		this.original.getWorldPosition(originalPosition);
 		const particlePosition = new THREE.Vector3();
 		this.mesh.getWorldPosition(particlePosition);
 
-		const distance = mouse.distanceTo(particlePosition);
+		const distance = mouse.distanceTo(originalPosition);
 
 		if (distance < this.settings.affectingDistance) {
-			const dir = new THREE.Vector2(particlePosition.x - mouse.x, particlePosition.y - mouse.y);
+			const dir = new THREE.Vector3(
+				particlePosition.x + originalPosition.x - mouse.x,
+				particlePosition.y + originalPosition.y - mouse.y,
+				particlePosition.z + originalPosition.z
+			);
 
 			dir.normalize();
 
 			this.newPosition.x = dir.x * this.settings.avoidanceFactor;
 			this.newPosition.y = dir.y * this.settings.avoidanceFactor;
+			this.newPosition.z = dir.z * this.settings.avoidanceFactor;
 
 			if (!this.avoiding) {
 				this.avoiding = true;
@@ -80,7 +89,7 @@ const particleGeoGroup: THREE.Group = new THREE.Group();
 
 export function init() {
 	scene = new THREE.Scene();
-	scene.background = new THREE.Color(0x1a1b26);
+	scene.background = new THREE.Color(0x0a0a0f);
 
 	camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
 	camera.position.set(0, 0, 60);
@@ -97,8 +106,8 @@ export function init() {
 	composer.addPass(renderPass);
 	const bloomPass = new UnrealBloomPass(
 		new THREE.Vector2(window.innerWidth, window.innerHeight),
-		2.5,
-		0.4,
+		8,
+		0.25,
 		0.01
 	);
 	composer.addPass(bloomPass);
@@ -159,8 +168,8 @@ export function createScene(geo: string, settings: Settings): void {
 	function animate() {
 		controls.update();
 
-		particleGeoGroup.rotation.x += settings.rotationSpeed;
-		particleGeoGroup.rotation.y += settings.rotationSpeed;
+		particleGeoGroup.rotation.x += settings.rotationSpeed * 3;
+		particleGeoGroup.rotation.y += settings.rotationSpeed * 2;
 		particleGeoGroup.rotation.z += settings.rotationSpeed;
 
 		for (let i = 0; i < particleGeo.length; i++) {
