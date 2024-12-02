@@ -2,12 +2,14 @@
 	import { browser } from '$app/environment';
 	import { init, createScene, destroyScene } from '$lib/scene';
 	import { onMount } from 'svelte';
+	import { slide } from 'svelte/transition';
 
 	import { Pane } from 'tweakpane';
 
 	const SETTINGS = {
 		affectingDistance: 15,
 		avoidanceFactor: 20,
+		lerpSpeed: 0.05,
 		rotationSpeed: 0.01
 	};
 
@@ -20,28 +22,34 @@
 		geometry = geo;
 	}
 
-	onMount((): void => {
+	onMount(() => {
 		init();
+
+		const pane: any = new Pane();
+
+		pane.addBinding(SETTINGS, 'affectingDistance', {
+			min: 0,
+			max: 50
+		});
+
+		pane.addBinding(SETTINGS, 'avoidanceFactor', {
+			min: 0,
+			max: 50
+		});
+
+		pane.addBinding(SETTINGS, 'lerpSpeed', {
+			min: 0,
+			max: 0.2
+		});
+
+		pane.addBinding(SETTINGS, 'rotationSpeed', {
+			min: 0,
+			max: 0.05
+		});
 	});
 
 	$effect(() => {
-		if (browser && geometry !== '') {
-			const pane: any = new Pane();
-
-			pane.addBinding(SETTINGS, 'affectingDistance', {
-				min: 0,
-				max: 50
-			});
-
-			pane.addBinding(SETTINGS, 'avoidanceFactor', {
-				min: 0,
-				max: 50
-			});
-
-			pane.addBinding(SETTINGS, 'rotationSpeed', {
-				min: 0,
-				max: 0.1
-			});
+		if (browser && geometry !== '' && !needDestroy) {
 			createScene(geometry, SETTINGS);
 			needDestroy = true;
 		} else if (browser && geometry === '' && needDestroy) {
@@ -57,7 +65,7 @@
 </svelte:head>
 
 {#if geometry === ''}
-	<main class="selection-screen">
+	<main class="selection-screen" transition:slide={{ delay: 100, duration: 1000 }}>
 		<!-- Create an animation for the a loading screen that fills up the whole page-->
 		<h1>Select an Object</h1>
 

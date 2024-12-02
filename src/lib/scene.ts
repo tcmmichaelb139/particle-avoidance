@@ -7,30 +7,27 @@ import { UnrealBloomPass } from 'three/addons';
 interface Settings {
 	affectingDistance: number;
 	avoidanceFactor: number;
+	lerpSpeed: number;
 	rotationSpeed: number;
 }
 
 class Particle {
 	mesh: THREE.Mesh;
-	radius: number;
 	original: THREE.Group;
 	lerp: number;
-	lerpSpeed: number;
 	avoiding: boolean;
 	newPosition: THREE.Vector3;
 	settings: Settings;
 
-	constructor(radius: number, original: THREE.Group, settings: Settings) {
+	constructor(original: THREE.Group, settings: Settings) {
 		const colors = [0x7aa2f7, 0x7dcfff, 0xbb9af7, 0x9ece6a, 0xff9e64, 0x73daca];
 
 		this.mesh = new THREE.Mesh(
-			new THREE.OctahedronGeometry(0.2, 0),
+			new THREE.BoxGeometry(0.2, 0.2, 0.8),
 			new THREE.MeshStandardMaterial({ color: colors[Math.floor(Math.random() * colors.length)] })
 		);
-		this.radius = radius;
 		this.original = original;
 		this.lerp = 0.0;
-		this.lerpSpeed = 0.05;
 		this.avoiding = false;
 		this.newPosition = new THREE.Vector3();
 		this.settings = settings;
@@ -74,24 +71,28 @@ class Particle {
 	updatePosition(): void {
 		this.mesh.position.lerp(this.newPosition, this.lerp);
 		if (this.lerp < 1) {
-			this.lerp += this.lerpSpeed;
+			this.lerp += this.settings.lerpSpeed;
 		}
 	}
 }
 
 let scene: THREE.Scene;
-let camera: THREE.PerspectiveCamera;
 let controls: OrbitControls;
 let composer: EffectComposer;
 let mouse = new THREE.Vector2();
 let particleGeo: Particle[] = [];
-const particleGeoGroup: THREE.Group = new THREE.Group();
+let particleGeoGroup: THREE.Group = new THREE.Group();
 
 export function init() {
 	scene = new THREE.Scene();
 	scene.background = new THREE.Color(0x0a0a0f);
 
-	camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
+	const camera: THREE.PerspectiveCamera = new THREE.PerspectiveCamera(
+		60,
+		window.innerWidth / window.innerHeight,
+		0.1,
+		1000
+	);
 	camera.position.set(0, 0, 60);
 
 	const renderer = new THREE.WebGLRenderer();
@@ -99,6 +100,7 @@ export function init() {
 	document.body.appendChild(renderer.domElement);
 
 	controls = new OrbitControls(camera, renderer.domElement);
+	controls.enableDamping = true;
 	controls.enableRotate = false;
 
 	composer = new EffectComposer(renderer);
@@ -106,9 +108,9 @@ export function init() {
 	composer.addPass(renderPass);
 	const bloomPass = new UnrealBloomPass(
 		new THREE.Vector2(window.innerWidth, window.innerHeight),
-		8,
-		0.25,
-		0.01
+		4,
+		0.5,
+		0.0
 	);
 	composer.addPass(bloomPass);
 
@@ -118,19 +120,20 @@ export function init() {
 		mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
 		mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
 
-		const vec = new THREE.Vector3(mouse.x, mouse.y, 0.5);
+		const vec = new THREE.Vector3(mouse.x, mouse.y, 0);
 
 		vec.unproject(camera);
 		const vec2 = vec.sub(camera.position).normalize();
 		const distance = -camera.position.z / vec2.z;
 		mouse = mouse.copy(camera.position).add(vec2.multiplyScalar(distance));
 	});
-	const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
-	directionalLight.position.set(1, 1, 2);
-	scene.add(directionalLight);
 }
 
 export function createScene(geo: string, settings: Settings): void {
+	const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
+	directionalLight.position.set(1, 1, 2);
+	scene.add(directionalLight);
+
 	type Geometry = { [key: string]: THREE.BufferGeometry };
 
 	const geometry: Geometry = {
@@ -150,7 +153,7 @@ export function createScene(geo: string, settings: Settings): void {
 		const original = new THREE.Group();
 		original.position.copy(vertex.clone().applyMatrix4(geometryMesh.matrixWorld));
 
-		const particle = new Particle(10, original, settings);
+		const particle = new Particle(original, settings);
 		particle.mesh.position.copy(vertex);
 		particleGeo = [...particleGeo, particle];
 
@@ -158,6 +161,8 @@ export function createScene(geo: string, settings: Settings): void {
 
 		particleGeoGroup.add(original);
 	}
+
+	geometryMesh.geometry.dispose();
 
 	scene.add(particleGeoGroup);
 
@@ -185,7 +190,9 @@ export function createScene(geo: string, settings: Settings): void {
 }
 
 export function destroyScene() {
-	scene.remove(particleGeoGroup);
+	scene.remove(scene.children[0]);
+	scene.remove(scene.children[0]);
 	particleGeo = [];
-	particleGeoGroup.children = [];
+	particleGeoGroup = new THREE.Group();
+	console.log(scene);
 }
