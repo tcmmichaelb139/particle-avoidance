@@ -11,6 +11,15 @@ interface Settings {
 	rotationSpeed: number;
 }
 
+type Geometry = { [key: string]: THREE.BufferGeometry };
+const geometry: Geometry = {
+	plane: new THREE.PlaneGeometry(20, 20, 40, 40),
+	sphere: new THREE.SphereGeometry(12, 40, 40),
+	box: new THREE.BoxGeometry(16, 16, 16, 16, 16, 16),
+	torus: new THREE.TorusGeometry(12, 3, 16, 96),
+	'torus knot': new THREE.TorusKnotGeometry(12, 3, 96, 16)
+};
+
 class Particle {
 	mesh: THREE.Mesh;
 	original: THREE.Group;
@@ -102,6 +111,7 @@ export function init() {
 	controls = new OrbitControls(camera, renderer.domElement);
 	controls.enableDamping = true;
 	controls.enableRotate = false;
+	controls.enablePan = false;
 
 	composer = new EffectComposer(renderer);
 	const renderPass = new RenderPass(scene, camera);
@@ -134,15 +144,6 @@ export function createScene(geo: string, settings: Settings): void {
 	directionalLight.position.set(1, 1, 2);
 	scene.add(directionalLight);
 
-	type Geometry = { [key: string]: THREE.BufferGeometry };
-
-	const geometry: Geometry = {
-		plane: new THREE.PlaneGeometry(20, 20, 40, 40),
-		sphere: new THREE.SphereGeometry(12, 40, 40),
-		box: new THREE.BoxGeometry(16, 16, 16, 16, 16, 16),
-		torus: new THREE.TorusGeometry(12, 3, 16, 96),
-		'torus knot': new THREE.TorusKnotGeometry(12, 3, 96, 16)
-	};
 	const geometryMesh = new THREE.Mesh(geometry[geo], new THREE.MeshBasicMaterial());
 	const verticePosition = geometryMesh.geometry.attributes.position;
 

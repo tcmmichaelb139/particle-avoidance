@@ -10,7 +10,7 @@
 		affectingDistance: 15,
 		avoidanceFactor: 20,
 		lerpSpeed: 0.05,
-		rotationSpeed: 0.01
+		rotationSpeed: 0.0
 	};
 
 	let geometry = $state('');
@@ -69,7 +69,7 @@
 		<!-- Create an animation for the a loading screen that fills up the whole page-->
 		<h1>Select an Object</h1>
 
-		<div>
+		<div class="selection-buttons">
 			<button class="select-button" onclick={() => clickedGeometry('plane')}>Plane</button>
 			<button class="select-button" onclick={() => clickedGeometry('sphere')}>Sphere</button>
 			<button class="select-button" onclick={() => clickedGeometry('box')}>Box</button>
@@ -191,6 +191,12 @@
 		color: var(--fg-color);
 		z-index: 100;
 		transition: opacity 0.5s ease-in-out;
+	}
+
+	.selection-buttons {
+		display: flex;
+		flex-wrap: wrap;
+		justify-content: center;
 	}
 
 	.select-button {
