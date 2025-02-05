@@ -10,7 +10,7 @@
 		affectingDistance: 15,
 		avoidanceFactor: 20,
 		lerpSpeed: 0.05,
-		rotationSpeed: 0.01
+		rotationSpeed: 0.001
 	};
 
 	let geometry = $state('');
